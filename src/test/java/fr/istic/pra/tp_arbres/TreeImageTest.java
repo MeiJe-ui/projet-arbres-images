@@ -33,8 +33,9 @@ import fr.istic.pra.tp_arbres.tree_image.TreeImage;
 
 /**
  * Unit tests for TreeImage class.
- * @author Vincent Drevelle
- * 
+ * @author Vincent Drevelle <vincent.drevelle@univ-rennes.fr>
+ * @version 16 octobre 2025
+ *
 
  */
 public class TreeImageTest {

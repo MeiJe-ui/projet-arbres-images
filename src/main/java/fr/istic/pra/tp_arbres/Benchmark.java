@@ -5,6 +5,11 @@ import java.util.Scanner;
 import fr.istic.pra.util.BinaryTreeImpl;
 import fr.istic.pra.util.BinaryTreeImplProf;
 
+/**
+ * Classe principale pour lancer le benchmark des opérations sur les images.
+ * @author Vincent Drevelle <vincent.drevelle@univ-rennes.fr>
+ * @version 17 octobre 2025
+ */
 public class Benchmark {
     public static void main(String[] args) {
         System.out.println();

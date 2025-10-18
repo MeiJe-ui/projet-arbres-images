@@ -11,8 +11,7 @@ import fr.istic.pra.util.*;
 
 /**
  * @author Vincent Drevelle <vincent.drevelle@univ-rennes.fr>
- * @version 1.0
- * @since 2025-05-08
+ * @version 17 octobre 2025
  *
  * Classe décrivant les images en noir et blanc de 256 sur 256 pixels
  * sous forme d'arbres binaires.

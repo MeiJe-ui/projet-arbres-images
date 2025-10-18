@@ -17,6 +17,8 @@ import fr.istic.pra.util.BinaryTreeImpl;
 
 /**
  * Unit tests for BinaryTreeImpl class.
+ * @author Vincent Drevelle <vincent.drevelle@univ-rennes.fr>
+ * @version 12 octobre 2025
  */
 public class BinaryTreeImplTest {
     static BinaryTree<Integer> createEmptyTree() {
