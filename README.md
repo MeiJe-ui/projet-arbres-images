@@ -19,7 +19,7 @@ Vous pouvez aussi faire un « fork » du projet sur votre compte Gitlab avant de
 
 ## Utilisation du projet
 
-Vous devrez implémenter les opérations sur les images binaires dans la classe [TreeImage.java](./src/main/java/fr/istic/pra/tp_arbres/tree_image/TpArbre.java). Dans un second temps, vous implémenterez la mise en œuvre d'un arbre binaire dans la classe [BinaryTreeImpl.java](./src/main/java/fr/istic/pra/util/BinaryTreeImpl.java).
+Vous devrez implémenter les opérations sur les images binaires dans la classe [TreeImage.java](./src/main/java/fr/istic/pra/tp_arbres/tree_image/TreeImage.java). Dans un second temps, vous implémenterez la mise en œuvre d'un arbre binaire dans la classe [BinaryTreeImpl.java](./src/main/java/fr/istic/pra/util/BinaryTreeImpl.java).
 
 Des jeux de tests unitaires JUnit sont fournis pour ces deux classes.
 
