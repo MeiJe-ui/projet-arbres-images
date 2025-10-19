@@ -2,6 +2,10 @@ package fr.istic.pra.util;
 
 /** 
  * Implémentation d'un arbre binaire avec des pointeurs vers les enfants et des nœuds sentinelles.
+ * @hidden
+ * @author Vincent Drevelle
+ * @version 1.02, 2025-10-07
+ * @param <T> Le type des valeurs stockées dans les nœuds de l'arbre.
  */
 public class BinaryTreeImpl<T> implements BinaryTree<T> {
     private T rootValue;

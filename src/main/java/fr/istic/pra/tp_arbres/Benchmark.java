@@ -7,10 +7,14 @@ import fr.istic.pra.util.BinaryTreeImplProf;
 
 /**
  * Classe principale pour lancer le benchmark des opérations sur les images.
- * @author Vincent Drevelle <vincent.drevelle@univ-rennes.fr>
- * @version 17 octobre 2025
+ * @author Vincent Drevelle
+ * @version 1.02, 2025-10-17
  */
 public class Benchmark {
+    /**
+     * Point d'entrée principal de l'application.
+     * @param args arguments de la ligne de commande (non utilisés)
+     */
     public static void main(String[] args) {
         System.out.println();
         System.out.println("------------------------------------------------------------------------------");

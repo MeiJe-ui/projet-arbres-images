@@ -10,18 +10,29 @@ import fr.istic.pra.util.BinaryTree.NodeType;
 import fr.istic.pra.util.*;
 
 /**
- * @author Vincent Drevelle <vincent.drevelle@univ-rennes.fr>
- * @version 17 octobre 2025
- *
- * Classe décrivant les images en noir et blanc de 256 sur 256 pixels
- * sous forme d'arbres binaires.
+ * Classe décrivant les images en noir et blanc de 256 sur 256 pixels sous forme d'arbres binaires.
+ * <p>
+ * Chaque image est représentée par un arbre binaire dont les nœuds contiennent des instances de la classe {@link Node}.
+ * <p>
+ * La racine de l'arbre représente l'image entière (256x256 pixels).
+ * Chaque nœud double a la valeur 2, et divise la région qu'il représente en deux sous-régions :
+ * <ul>
+ *   <li>Si le nœud est à un niveau pair (0, 2, 4, ...), la région représentée est carrée, et la division se fait verticalement : fils gauche correspondant à la moitié haute et fils droit à la moitié basse.</li>
+ *   <li>Si le nœud est à un niveau impair (1, 3, 5, ...), la région représentée est rectangulaire, et la division se fait horizontalement : fils gauche correspondant à la moitié gauche et fils droit à la moitié droite.</li>
+ * </ul>
+ * Chaque feuille de l'arbre représente une région uniforme de l'image (tout noir ou tout blanc).
+ * @hidden
+ * @author Vincent Drevelle
+ * @version 1.02, 2025-10-17
  */
 
 public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, ImageOperationsByPixel
 {
-	private BinaryTree<Node> tree; // The binary tree representing the image
+	/** Arbre binaire représentant l'image */
+	private BinaryTree<Node> tree;
 
-	private final Supplier<BinaryTree<Node>> treeFactory; // Factory to create new binary trees
+	/** Usine pour créer de nouveaux arbres binaires */
+	private final Supplier<BinaryTree<Node>> treeFactory;
 
 
 	/**
@@ -39,10 +50,10 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 
 	/**
 	 * Crée une nouvelle instance de BinaryTree<Node> en utilisant l'usine d'arbres binaires.
-	 * @return une nouvelle instance de BinaryTree<Node>
 	 * 
 	 * Utilisez toujours cette méthode pour créer une nouvelle instance de BinaryTree<Node>,
 	 * afin de garantir que la même implémentation de l'arbre binaire est utilisée.
+	 * @return une nouvelle instance de BinaryTree<Node>
 	 */
 	private BinaryTree<Node> createNewTree() {
 		return treeFactory.get(); // On utilise l'usine pour créer une nouvelle instance d'arbre binaire
@@ -50,9 +61,9 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 
 	/**
 	 * Constructeur avec choix de l'implémentation de l'arbre binaire.
-	 * @param treeFactory  usine pour créer des instances de BinaryTree<Node>
 	 * 
 	 * Usage : new TreeImage(BinaryTreeImpl::new) ou new TreeImage(BinaryTreeImplProf::new)
+	 * @param treeFactory  usine pour créer des instances de {@link BinaryTree<Node>}
 	 */
 	public TreeImage(Supplier<BinaryTree<Node>> treeFactory) {
 		super();
@@ -63,10 +74,10 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 
 	/**
 	 * Crée une nouvelle instance de TreeImage avec la même usine d'arbres binaires.
-	 * @return une nouvelle instance de TreeImage
 	 * 
 	 * Utilisez toujours cette méthode pour créer une nouvelle instance de TreeImage,
 	 * afin de garantir que la même implémentation de l'arbre binaire est utilisée.
+	 * @return une nouvelle instance de TreeImage
 	 */
 	protected TreeImage createTreeImage() {
 		return new TreeImage(treeFactory);
@@ -80,10 +91,11 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 
 	/** 
 	 * Crée une copie de l'image courante (clone).
-	 * @return une copie de l'image courante
-	 *
+	 * 
 	 * La méthode est implémentée ici en utilisant affect (que vous devez implémenter plus loin dans le code)
 	 * et createTreeImage (pour créer une nouvelle instance de TreeImage avec la même usine d'arbres binaires).
+	 * 
+	 * @return une copie de l'image courante
 	 **/
 	@Override
 	public TreeImage copy() {
@@ -121,9 +133,8 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 
 	/**
 	 * Affecter le contenu d'une autre image à cette image
-	 * @param image  l'image source
-	 *
 	 * La méthode appelle une implémentation optimisée (que vous devez implémenter) si l'autre image est aussi une TreeImage.
+	 * @param image  l'image source
 	 */
 	@Override
 	public void affect(Image image) {
@@ -146,9 +157,8 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 
 	/** 
 	 * Intersection de deux images (priorité aux pixels noirs) 
-	 * @param image  l'image à intersecter avec l'image courante
-	 * 
 	 * La méthode appelle une implémentation optimisée (que vous devez implémenter) si l'autre image est aussi une TreeImage.
+	 * @param image  l'image à intersecter avec l'image courante
 	 */
 	@Override
 	public void intersection(Image image) {
@@ -161,9 +171,8 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 
 	/** 
 	 * Intersection de deux TreeImage (priorité aux pixels noirs)
-	 * @param image  l'image à intersecter avec l'image courante
-	 * 
 	 * Un pixel resultat est blanc si le pixel correspondant est blanc dans les deux images.
+	 * @param image  l'image à intersecter avec l'image courante
 	 */
 	public void intersection(TreeImage image) {
 		/* TODO: À vous de compléter ! (en attendant, on fait planter) */
@@ -203,9 +212,8 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 
 	/** 
 	 * Symétrie horizontale de l'image 
-	 * @return une nouvelle image correspondant au retournement horizontal de l'image courante
-	 * 
 	 * La gauche devient la droite et la droite devient la gauche.
+	 * @return une nouvelle image correspondant au retournement horizontal de l'image courante
 	 */
 	@Override
 	public TreeImage flippedHorizontal() {
@@ -234,10 +242,11 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 
 	/** 
 	 * Test de la diagonale principale
-	 * @return true si tous les pixels de la diagonale sont allumés (blancs), false sinon
-	 *
 	 * La diagonale principale correspond aux pixels (i,i) pour i allant de 0 à 255.
+	 * 
 	 * L'utilisation de isPixelOn dans cette méthode est interdite pour des raisons de performance.
+	 * 
+	 * @return true si tous les pixels de la diagonale sont allumés (blancs), false sinon
 	 */
 	@Override
 	public boolean testDiagonal() {
@@ -259,12 +268,13 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 
 	/**
 	 * Dessine un pixel dans l'image avec la couleur spécifiée.
-	 * @param x  abscisse du pixel
-	 * @param y  ordonnée du pixel
-	 * @param color couleur du pixel (0 ou 1)
 	 * 
 	 * La méthode est implémentée ici en utilisant fillRect (que vous devez implémenter plus loin dans le code),
 	 * car dessiner un pixel revient à dessiner un rectangle de 1x1 pixel.
+	 * 
+	 * @param x  abscisse du pixel
+	 * @param y  ordonnée du pixel
+	 * @param color couleur du pixel (0 ou 1)
 	 */
 	@Override
 	public void drawPixel(int x, int y, int color) {
@@ -273,14 +283,15 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 
 	/**
 	 * Remplit un rectangle dans l'image avec la couleur spécifiée.
+	 * 
+	 * La méthode appelle une implémentation récursive (que vous devez implémenter) pour remplir le rectangle.
+	 * L'implémentation de cette méthode est en bonus.
+	 * 
 	 * @param x  abscisse du coin supérieur gauche du rectangle
 	 * @param y  ordonnée du coin supérieur gauche du rectangle
 	 * @param w  largeur du rectangle
 	 * @param h  hauteur du rectangle
 	 * @param color couleur de remplissage (0 ou 1)
-	 * 
-	 * La méthode appelle une implémentation récursive (que vous devez implémenter) pour remplir le rectangle.
-	 * L'implémentation de cette méthode est en bonus.
 	 */
 	@Override
 	public void fillRect(int x, int y, int w, int h, int color) {

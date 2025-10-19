@@ -17,7 +17,7 @@ import fr.istic.pra.util.BinaryTreeImpl;
 
 /**
  * Unit tests for BinaryTreeImpl class.
- * @author Vincent Drevelle <vincent.drevelle@univ-rennes.fr>
+ * @author Vincent Drevelle
  * @version 12 octobre 2025
  */
 public class BinaryTreeImplTest {
