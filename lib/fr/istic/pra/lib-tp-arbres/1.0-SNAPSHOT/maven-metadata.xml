@@ -3,33 +3,33 @@
   <groupId>fr.istic.pra</groupId>
   <artifactId>lib-tp-arbres</artifactId>
   <versioning>
-    <lastUpdated>20251019144446</lastUpdated>
+    <lastUpdated>20251019154158</lastUpdated>
     <snapshot>
-      <timestamp>20251019.144446</timestamp>
+      <timestamp>20251019.154158</timestamp>
       <buildNumber>1</buildNumber>
     </snapshot>
     <snapshotVersions>
       <snapshotVersion>
         <extension>jar</extension>
-        <value>1.0-20251019.144446-1</value>
-        <updated>20251019144446</updated>
+        <value>1.0-20251019.154158-1</value>
+        <updated>20251019154158</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>
-        <value>1.0-20251019.144446-1</value>
-        <updated>20251019144446</updated>
+        <value>1.0-20251019.154158-1</value>
+        <updated>20251019154158</updated>
       </snapshotVersion>
       <snapshotVersion>
         <classifier>sources</classifier>
         <extension>jar</extension>
-        <value>1.0-20251019.144446-1</value>
-        <updated>20251019144446</updated>
+        <value>1.0-20251019.154158-1</value>
+        <updated>20251019154158</updated>
       </snapshotVersion>
       <snapshotVersion>
         <classifier>javadoc</classifier>
         <extension>jar</extension>
-        <value>1.0-20251019.144446-1</value>
-        <updated>20251019144446</updated>
+        <value>1.0-20251019.154158-1</value>
+        <updated>20251019154158</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>

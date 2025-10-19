@@ -5,14 +5,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.junit.jupiter.api.function.*;
-
 import org.junit.jupiter.api.Test;
 
 import fr.istic.pra.util.BinaryTree;
 import fr.istic.pra.util.BinaryTree.NodeType;
-import fr.istic.pra.util.BinaryTreeImplProf;
 import fr.istic.pra.util.BinaryTreeImpl;
+import fr.istic.pra.util.BinaryTreeImplProf;
 
 
 /**
@@ -109,8 +107,14 @@ public class BinaryTreeImplTest {
         tree.createRootWithValue(1);
         tree.getLeft().createRootWithValue(2);
         tree.getRight().createRootWithValue(3);
+
         assertEquals(NodeType.DOUBLE, tree.getType());
         assertEquals(3, tree.size());
+
+        assertThrows(ClassCastException.class, () -> { BinaryTreeImplProf<Integer> t = (BinaryTreeImplProf<Integer>) tree; }, "BinaryTreeImpl should not be derived from BinaryTreeImplProf");
+        assertThrows(ClassCastException.class, () -> { BinaryTreeImplProf<Integer> t = (BinaryTreeImplProf<Integer>) tree.getLeft(); }, "BinaryTreeImpl should not be derived from BinaryTreeImplProf");
+        assertThrows(ClassCastException.class, () -> { BinaryTreeImplProf<Integer> t = (BinaryTreeImplProf<Integer>) tree.getRight(); }, "BinaryTreeImpl should not be derived from BinaryTreeImplProf");
+        
         assertTrue(tree.contains(1));
         assertTrue(tree.contains(2));
         assertTrue(tree.contains(3));
