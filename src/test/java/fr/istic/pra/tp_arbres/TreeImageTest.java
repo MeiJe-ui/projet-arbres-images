@@ -3,7 +3,6 @@ package fr.istic.pra.tp_arbres;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.abort;
 
-import org.junit.jupiter.api.function.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 
@@ -14,7 +13,6 @@ import java.io.IOException;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import java.util.function.BinaryOperator;
@@ -27,6 +25,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import fr.istic.pra.util.BinaryTree;
+import fr.istic.pra.util.BinaryTree.NodeType;
 import fr.istic.pra.tp_arbres.interfaces.Image;
 import fr.istic.pra.tp_arbres.tree_image.Node;
 import fr.istic.pra.tp_arbres.tree_image.TreeImage;
@@ -234,7 +233,7 @@ public class TreeImageTest {
     @ParameterizedTest
     @MethodSource("streamImageTransformations")
     public void treeImageOperationsReturnSameType(String opName, UnaryOperator<TreeImage> op) {
-        class CustomTree extends fr.istic.pra.util.BinaryTreeImpl<Node> {
+        class CustomTree extends fr.istic.pra.util.BinaryTreeImplProf<Node> {
             // You can override methods here if needed
         };
         class TestTreeImage extends TreeImage {
@@ -256,9 +255,6 @@ public class TreeImageTest {
 
         TreeImage image = new TreeImage();
         assertEquals(image.getTree().getClass(), op.apply(image).getTree().getClass(), opName + " did not return a TreeImage of the same type: utilisez createTreeImage() et createNewTree() au lieu de new TreeImage() et new BinaryTreeImplXXX()");
-
-        image = new TreeImage(fr.istic.pra.util.BinaryTreeImpl::new);
-        assertEquals(image.getTree().getClass(), op.apply(image).getTree().getClass(), opName + " did not return a TreeImage of the same type (BinaryTreeImpl class): utilisez createTreeImage() et createNewTree() au lieu de new TreeImage() et new BinaryTreeImplXXX()");
 
         TreeImage customImage = new TreeImage(CustomTree::new);
         assertEquals(customImage.getTree().getClass(), op.apply(customImage).getTree().getClass(), opName + " did not return a TreeImage of the same type (CustomTree class): utilisez createTreeImage() et createNewTree() au lieu de new TreeImage() et new BinaryTreeImplXXX()");
@@ -349,6 +345,42 @@ public class TreeImageTest {
         return java.util.Arrays.equals(os1.toByteArray(), os2.toByteArray());
     }
 
+    private static void assertImageIsWellFormed(TreeImage image, String imageName) {
+        assertNotNull(image.getTree(), imageName + " has a null tree");
+        assertTreeIsWellFormed(image.getTree(), imageName);
+    }
+
+    private static void assertTreeIsWellFormed(BinaryTree<Node> tree, String treeName) {
+        if (tree.isEmpty()) return;
+        assertNotNull(tree.getRootValue(), treeName + " contains a null value");
+        if (tree.getRootValue().state == Node.INDETERMINATE_STATE) {
+            assertEquals(NodeType.DOUBLE, tree.getType(), treeName + " has an indeterminate state (2) at a non-double node");
+            assertTreeIsWellFormed(tree.getLeft(), treeName);
+            assertTreeIsWellFormed(tree.getRight(), treeName);
+        }
+        else {
+            assertEquals(NodeType.LEAF, tree.getType(), treeName + " has a determinate state (0 or 1) at a non-leaf node");
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "1, a3.tree",
+        "0, a4.tree",
+    })
+    @DisplayName("test fill")
+    public void testFillFichiers(int value, String expectedFile) throws IOException {
+        TreeImage expected = loadTreeImage(expectedFile);
+        TreeImage image = new TreeImage();
+        image.fill(value);
+        assertImageIsWellFormed(image, "image after fill(" + value + ")");
+        assertTrue(compareTreeImages(image, expected), "fill(" + value + ") on new image");
+        TreeImage initialImage = loadTreeImage("cartoon.tree");
+        initialImage.fill(value);
+        assertImageIsWellFormed(initialImage, "image after fill(" + value + ")");
+        assertTrue(compareTreeImages(initialImage, expected), "fill(" + value + ") on cartoon image");
+    }
+
     @ParameterizedTest
     @CsvSource({
         "a1.tree, 0, 128, true",
@@ -384,11 +416,11 @@ public class TreeImageTest {
     })
     @DisplayName("test intersection avec divers fichiers")
     public void testIntersectionFichiers(String file1, String file2, String expectedFile) throws IOException {
-        TreeImage image1 = loadTreeImage(file1);
+        TreeImage result = loadTreeImage(file1);
         TreeImage image2 = loadTreeImage(file2);
         TreeImage expected = loadTreeImage(expectedFile);
-        TreeImage result = image1.copy();
         result.intersection(image2);
+        assertImageIsWellFormed(result, "result after intersection(" + file1 + ", " + file2 + ")");
         assertTrue(compareTreeImages(result, expected), "intersection " + file1 + " et " + file2);
     }
 
@@ -397,6 +429,7 @@ public class TreeImageTest {
         TreeImage image1 = loadTreeImage("a1.tree");
         TreeImage image2 = new TreeImage();
         image2.affect(image1);
+        assertImageIsWellFormed(image2, "image after affect(a1)");
         assertTrue(compareTreeImages(image1, image2), "affect a1");
     }
 
@@ -405,6 +438,7 @@ public class TreeImageTest {
         TreeImage image1 = loadTreeImage("a1.tree");
         TreeImage image2 = loadTreeImage("a2.tree");
         image2.affect(image1);
+        assertImageIsWellFormed(image2, "image after affect(a1 to a2)");
         assertTrue(compareTreeImages(image1, image2), "affect a1 to a2");
     }
 
@@ -413,23 +447,26 @@ public class TreeImageTest {
         TreeImage image1 = loadTreeImage("a1.tree");
         TreeImage expected = loadTreeImage("test-r1.tree");
         TreeImage result = image1.rotated180();
+        assertImageIsWellFormed(result, "result after rotated180(a1)");
         assertTrue(compareTreeImages(result, expected), "rotation a1");
     }
 
     @Test
-    public void testVideoInverseA2() throws IOException {
+    public void testInvertedA2() throws IOException {
         TreeImage image1 = loadTreeImage("a2.tree");
         TreeImage expected = loadTreeImage("test-i2.tree");
         TreeImage result = image1.inverted();
-        assertTrue(compareTreeImages(result, expected), "videoInverse a2");
+        assertImageIsWellFormed(result, "result after inverted(a2)");
+        assertTrue(compareTreeImages(result, expected), "inverted a2");
     }
 
     @Test
-    public void testMirrorHCartoon() throws IOException {
+    public void testFlippedHorizontalCartoon() throws IOException {
         TreeImage image1 = loadTreeImage("cartoon.tree");
         TreeImage expected = loadTreeImage("cartoonh.tree");
         TreeImage result = image1.flippedHorizontal();
-        assertTrue(compareTreeImages(result, expected), "mirrorH cartoon");
+        assertImageIsWellFormed(result, "result after flippedHorizontal(cartoon)");
+        assertTrue(compareTreeImages(result, expected), "flippedHorizontal cartoon");
     }
 
 
@@ -439,11 +476,12 @@ public class TreeImageTest {
         "a3.tree, a3.tree",
         "cartoon90.tree, cartoon.tree",
     })
-    @DisplayName("testRotateClockwise90 avec divers fichiers")
-    public void testRotateClockwise90(String inputFile, String expectedFile) throws IOException {
+    @DisplayName("test rotatedClockwise90 avec divers fichiers")
+    public void testRotatedClockwise90(String inputFile, String expectedFile) throws IOException {
         TreeImage image1 = loadTreeImage(inputFile);
         TreeImage expected = loadTreeImage(expectedFile);
         TreeImage result = image1.rotatedClockwise90();
+        assertImageIsWellFormed(result, "result after rotatedClockwise90(" + inputFile + ")");
         assertTrue(compareTreeImages(result, expected), "rotatedClockwise90 " + inputFile);
     }
 
