@@ -300,4 +300,23 @@ public class BinaryTreeImplTest {
         assertNotEquals(tree1, null);
         assertNotEquals(tree1, "some string");
     }
+
+    /**
+     * Test equality betwwen trees and subtrees.
+     */
+    @Test
+    public void testEqualityWithSubtrees() {
+        // First get a view on a subtree of a full tree
+        BinaryTree<Integer> fullTree = constructExampleTree();
+        BinaryTree<Integer> treeView = fullTree.getLeft().getLeft(); // Should be subtree rooted at 4
+        assertEquals(4, treeView.getRootValue());
+        // Now construct an independent tree with same structure and values
+        BinaryTree<Integer> independentTree = createEmptyTree();
+        independentTree.createRootWithValue(4);
+        independentTree.getLeft().createRootWithValue(8);
+        independentTree.getRight().createRootWithValue(9);
+        // Check equality
+        assertEquals(treeView, independentTree, "Subtree should equal independent tree with same structure and values");
+        assertEquals(independentTree, treeView, "Independent tree should equal subtree with same structure and values");
+    }
 }
