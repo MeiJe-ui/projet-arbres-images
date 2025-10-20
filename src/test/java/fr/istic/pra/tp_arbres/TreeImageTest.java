@@ -124,24 +124,6 @@ public class TreeImageTest {
     }
 
     /**
-     * Check rotated180
-     */
-    @Test
-    public void testRotated180() throws IOException {
-        // Load an image
-        TreeImage image = new TreeImage();
-        assertTrue(image.load("images/cartoon.tree"), "Loading images/cartoon.tree failed");
-        TreeImage rotated = image.rotated180();
-        assertNotNull(rotated, "rotated180 returned null");
-        assertNotSame(image, rotated, "rotated180 returned the same object");
-        FileInputStream groundTruthStream = new FileInputStream("images/cartoon180.tree");
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        assertTrue(rotated.save(os), "Saving rotated image to output stream failed");
-        assertArrayEquals(groundTruthStream.readAllBytes(), os.toByteArray(), "rotated180 result does not match ground truth");
-        groundTruthStream.close();
-    }
-
-    /**
      * Check that operators do not modify the original image.
      */
     @ParameterizedTest
@@ -429,8 +411,8 @@ public class TreeImageTest {
         TreeImage image1 = loadTreeImage("a1.tree");
         TreeImage image2 = new TreeImage();
         image2.affect(image1);
-        assertImageIsWellFormed(image2, "image after affect(a1)");
-        assertTrue(compareTreeImages(image1, image2), "affect a1");
+        assertImageIsWellFormed(image2, "image after affect(a1) to new image");
+        assertTrue(compareTreeImages(image1, image2), "affect a1 to new image");
     }
 
     @Test
@@ -438,26 +420,40 @@ public class TreeImageTest {
         TreeImage image1 = loadTreeImage("a1.tree");
         TreeImage image2 = loadTreeImage("a2.tree");
         image2.affect(image1);
-        assertImageIsWellFormed(image2, "image after affect(a1 to a2)");
+        assertImageIsWellFormed(image2, "image after affect(a1) to a2)");
         assertTrue(compareTreeImages(image1, image2), "affect a1 to a2");
     }
 
-    @Test
-    public void testRotated180A1() throws IOException {
-        TreeImage image1 = loadTreeImage("a1.tree");
-        TreeImage expected = loadTreeImage("test-r1.tree");
+    @ParameterizedTest
+    @CsvSource({
+        "a1.tree, test-r1.tree",
+        "cartoon.tree, cartoon180.tree",
+    })
+    @DisplayName("test rotated180 avec divers fichiers")
+    public void testRotated180(String inputFile, String expectedFile) throws IOException {
+        TreeImage image1 = loadTreeImage(inputFile);
+        TreeImage expected = loadTreeImage(expectedFile);
         TreeImage result = image1.rotated180();
-        assertImageIsWellFormed(result, "result after rotated180(a1)");
-        assertTrue(compareTreeImages(result, expected), "rotation a1");
+        assertNotNull(result, "rotated180(" + inputFile + ") returned null");
+        assertNotSame(image1, result, "rotated180(" + inputFile + ") returned the same object");
+        assertImageIsWellFormed(result, "result after rotated180(" + inputFile + ")");
+        assertTrue(compareTreeImages(result, expected), "rotated180 " + inputFile);
     }
 
-    @Test
-    public void testInvertedA2() throws IOException {
-        TreeImage image1 = loadTreeImage("a2.tree");
-        TreeImage expected = loadTreeImage("test-i2.tree");
+    @ParameterizedTest
+    @CsvSource({
+        "a2.tree, test-i2.tree",
+        "cartoon.tree, cartooni.tree",
+    })
+    @DisplayName("test inverted avec divers fichiers")
+    public void testInverted(String file1, String expectedFile) throws IOException {
+        TreeImage image1 = loadTreeImage(file1);
+        TreeImage expected = loadTreeImage(expectedFile);
         TreeImage result = image1.inverted();
-        assertImageIsWellFormed(result, "result after inverted(a2)");
-        assertTrue(compareTreeImages(result, expected), "inverted a2");
+        assertNotNull(result, "inverted(" + file1 + ") returned null");
+        assertNotSame(image1, result, "inverted(" + file1 + ") returned the same object");
+        assertImageIsWellFormed(result, "result after inverted(" + file1 + ")");
+        assertTrue(compareTreeImages(result, expected), "inverted " + file1);
     }
 
     @Test
@@ -465,6 +461,8 @@ public class TreeImageTest {
         TreeImage image1 = loadTreeImage("cartoon.tree");
         TreeImage expected = loadTreeImage("cartoonh.tree");
         TreeImage result = image1.flippedHorizontal();
+        assertNotNull(result, "flippedHorizontal(cartoon) returned null");
+        assertNotSame(image1, result, "flippedHorizontal(cartoon) returned the same object");
         assertImageIsWellFormed(result, "result after flippedHorizontal(cartoon)");
         assertTrue(compareTreeImages(result, expected), "flippedHorizontal cartoon");
     }
@@ -474,13 +472,18 @@ public class TreeImageTest {
     @ParameterizedTest
     @CsvSource({
         "a3.tree, a3.tree",
-        "cartoon90.tree, cartoon.tree",
+        "a1.tree, test-rd1.tree",
+        "cartoon.tree, cartoon90d.tree",
+        "cartoon90d.tree, cartoon180.tree",
+        "cartoon90g.tree, cartoon.tree",
     })
     @DisplayName("test rotatedClockwise90 avec divers fichiers")
     public void testRotatedClockwise90(String inputFile, String expectedFile) throws IOException {
         TreeImage image1 = loadTreeImage(inputFile);
         TreeImage expected = loadTreeImage(expectedFile);
         TreeImage result = image1.rotatedClockwise90();
+        assertNotNull(result, "rotatedClockwise90(" + inputFile + ") returned null");
+        assertNotSame(image1, result, "rotatedClockwise90(" + inputFile + ") returned the same object");
         assertImageIsWellFormed(result, "result after rotatedClockwise90(" + inputFile + ")");
         assertTrue(compareTreeImages(result, expected), "rotatedClockwise90 " + inputFile);
     }
