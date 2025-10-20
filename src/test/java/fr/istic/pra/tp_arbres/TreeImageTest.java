@@ -1,32 +1,25 @@
 package fr.istic.pra.tp_arbres;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.abort;
+import static org.junit.jupiter.api.Assumptions.*;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
-import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
-import java.util.function.BiPredicate;
+import java.util.function.*;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import fr.istic.pra.util.BinaryTree;
 import fr.istic.pra.util.BinaryTree.NodeType;
-import fr.istic.pra.tp_arbres.interfaces.Image;
 import fr.istic.pra.tp_arbres.tree_image.Node;
 import fr.istic.pra.tp_arbres.tree_image.TreeImage;
 
@@ -104,6 +97,42 @@ public class TreeImageTest {
         ).flatMap(stream -> stream);
     }
 
+    //
+    // --- Méthodes utilitaires pour les tests ---
+    //
+
+    private static TreeImage loadTreeImage(String fileName) throws IOException {
+        TreeImage image = new TreeImage();
+        assertTrue(image.load("images/" + fileName), "Loading images/" + fileName + " failed");
+        return image;
+    }
+
+    private static boolean compareTreeImages(TreeImage img1, TreeImage img2) throws IOException {
+        ByteArrayOutputStream os1 = new ByteArrayOutputStream();
+        ByteArrayOutputStream os2 = new ByteArrayOutputStream();
+        assertTrue(img1.save(os1), "Saving img1 failed");
+        assertTrue(img2.save(os2), "Saving img2 failed");
+        return java.util.Arrays.equals(os1.toByteArray(), os2.toByteArray());
+    }
+
+    private static void assertImageIsWellFormed(TreeImage image, String imageName) {
+        assertNotNull(image.getTree(), imageName + " has a null tree");
+        assertTreeIsWellFormed(image.getTree(), imageName);
+    }
+
+    private static void assertTreeIsWellFormed(BinaryTree<Node> tree, String treeName) {
+        if (tree.isEmpty()) return;
+        assertNotNull(tree.getRootValue(), treeName + " contains a null value");
+        if (tree.getRootValue().state == Node.INDETERMINATE_STATE) {
+            assertEquals(NodeType.DOUBLE, tree.getType(), treeName + " has an indeterminate state (2) at a non-double node");
+            assertTreeIsWellFormed(tree.getLeft(), treeName);
+            assertTreeIsWellFormed(tree.getRight(), treeName);
+        }
+        else {
+            assertEquals(NodeType.LEAF, tree.getType(), treeName + " has a determinate state (0 or 1) at a non-leaf node");
+        }
+    }
+
     /**
      * Load and save an image. Should be identical.
      */
@@ -130,12 +159,9 @@ public class TreeImageTest {
     @MethodSource("streamImageTransformations")
     @DisplayName("Les opérations unaires TreeImage ne modifient pas l'image originale")
     public void testImageOperatorsDoNotModifyOriginal(String opName, UnaryOperator<TreeImage> op) throws IOException {
-        FileInputStream is = new FileInputStream("images/image.tree");
-        byte[] origData = is.readAllBytes();
-        is.close();
-        // Load the image
-        TreeImage image = new TreeImage();
-        assertTrue(image.load(new ByteArrayInputStream(origData)), "Loading image.tree failed");
+        final String imageFile = "image.tree";
+        TreeImage originalImage = loadTreeImage(imageFile);
+        TreeImage image = loadTreeImage(imageFile);
 
         // Apply the operation
         TreeImage result = null;
@@ -145,24 +171,20 @@ public class TreeImageTest {
             abort(String.format("%s: Operation not implemented", opName)); // Operation not implemented, skip
         }
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        assertTrue(image.save(os), "Saving image to output stream failed");
         // Check that the original image is unchanged
-        assertArrayEquals(origData, os.toByteArray(), opName + " modified the original image");
+        assertImageIsWellFormed(originalImage, "originalImage after " + opName);
+        assertTrue(compareTreeImages(originalImage, image),  opName + " modified the original image");
 
         // Check that the result is not null and is a different object
         assertNotNull(result, opName + " returned null");
         assertNotSame(image, result, opName + " returned the same object as the original image");
 
         // Check that the result is an independent copy
-        result.getTree().setRootValue(Node.valueOf(0)); // Modify the result tree
-        os.reset();
-        assertTrue(image.save(os), "Saving image to output stream failed");
-        assertArrayEquals(origData, os.toByteArray(), opName + " result is not independent from the original image");
-        result.getTree().setRootValue(Node.valueOf(1)); // Modify the result tree
-        os.reset();
-        assertTrue(image.save(os), "Saving image to output stream failed");
-        assertArrayEquals(origData, os.toByteArray(), opName + " result is not independent from the original image");
+        result.getTree().getLeft().clear(); // Modify the result tree
+        result.getTree().getLeft().createRootWithValue(Node.valueOf(0)); 
+        assertTrue(compareTreeImages(originalImage, image), opName + " result is not independent from the original image");
+        result.getTree().getLeft().setRootValue(Node.valueOf(1)); // Modify the result tree
+        assertTrue(compareTreeImages(originalImage, image), opName + " result is not independent from the original image");
     }
 
     /**
@@ -172,18 +194,12 @@ public class TreeImageTest {
     @ParameterizedTest
     @MethodSource("streamImageCombinations")
     public void testImageBinaryOperatorsDoNotModifyOriginals(String opName, BiConsumer<TreeImage, TreeImage> op) throws IOException {
-        FileInputStream is = new FileInputStream("images/image.tree");
-        byte[] origData1 = is.readAllBytes();
-        is.close();
-        is = new FileInputStream("images/a2.tree");
-        byte[] origData2 = is.readAllBytes();
-        is.close();
-
         // Load the images
-        TreeImage image1 = new TreeImage();
-        assertTrue(image1.load(new ByteArrayInputStream(origData1)), "Loading image.tree failed");
-        TreeImage image2 = new TreeImage();
-        assertTrue(image2.load(new ByteArrayInputStream(origData2)), "Loading a2.tree failed");
+        final String imageFile1 = "image.tree";
+        TreeImage image1 = loadTreeImage(imageFile1);
+        final String imageFile2 = "a2.tree";
+        TreeImage originalImage2 = loadTreeImage(imageFile2);
+        TreeImage image2 = loadTreeImage(imageFile2);
 
         // Apply the operation
         try {
@@ -193,19 +209,16 @@ public class TreeImageTest {
         }
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        // Check that the original image is unchanged
-        assertTrue(image2.save(os), "Saving image to output stream failed");
-        assertArrayEquals(origData2, os.toByteArray(), opName + " modified the original image2");
+        // Check that the second operand image is unchanged
+        assertImageIsWellFormed(originalImage2, "originalImage2 after " + opName);
+        assertTrue(compareTreeImages(originalImage2, image2),  opName + " modified the original image2");
 
-        // Check that the result is an independent copy
-        image1.getTree().setRootValue(Node.valueOf(0)); // Modify the result tree
-        os.reset();
-        assertTrue(image2.save(os), "Saving image to output stream failed");
-        assertArrayEquals(origData2, os.toByteArray(), opName + " result is not independent from the original image1");
-        image1.getTree().setRootValue(Node.valueOf(1)); // Modify the result tree
-        os.reset();
-        assertTrue(image2.save(os), "Saving image to output stream failed");
-        assertArrayEquals(origData2, os.toByteArray(), opName + " result is not independent from the original image2");
+        // Check that the result is independent from the second operand
+        image1.getTree().getLeft().clear(); // Modify the result tree
+        image1.getTree().getLeft().createRootWithValue(Node.valueOf(0)); 
+        assertTrue(compareTreeImages(originalImage2, image2), opName + " result is not independent from the original image2");
+        image1.getTree().getLeft().setRootValue(Node.valueOf(1)); // Modify the result tree
+        assertTrue(compareTreeImages(originalImage2, image2), opName + " result is not independent from the original image2");
     }
 
     /**
@@ -307,43 +320,9 @@ public class TreeImageTest {
         }
     }
 
-
-    /////////////////////////////////////////////////////////////////////////////////////
-    ////// Tests convertis depuis TestImage.java de la version précédente du TP ////////
-    /////////////////////////////////////////////////////////////////////////////////////
-    // --- Tests adaptés depuis TestImage.java (ancienne version) ---
-
-    private static TreeImage loadTreeImage(String fileName) throws IOException {
-        TreeImage image = new TreeImage();
-        assertTrue(image.load("images/" + fileName), "Loading images/" + fileName + " failed");
-        return image;
-    }
-
-    private static boolean compareTreeImages(TreeImage img1, TreeImage img2) throws IOException {
-        ByteArrayOutputStream os1 = new ByteArrayOutputStream();
-        ByteArrayOutputStream os2 = new ByteArrayOutputStream();
-        assertTrue(img1.save(os1), "Saving img1 failed");
-        assertTrue(img2.save(os2), "Saving img2 failed");
-        return java.util.Arrays.equals(os1.toByteArray(), os2.toByteArray());
-    }
-
-    private static void assertImageIsWellFormed(TreeImage image, String imageName) {
-        assertNotNull(image.getTree(), imageName + " has a null tree");
-        assertTreeIsWellFormed(image.getTree(), imageName);
-    }
-
-    private static void assertTreeIsWellFormed(BinaryTree<Node> tree, String treeName) {
-        if (tree.isEmpty()) return;
-        assertNotNull(tree.getRootValue(), treeName + " contains a null value");
-        if (tree.getRootValue().state == Node.INDETERMINATE_STATE) {
-            assertEquals(NodeType.DOUBLE, tree.getType(), treeName + " has an indeterminate state (2) at a non-double node");
-            assertTreeIsWellFormed(tree.getLeft(), treeName);
-            assertTreeIsWellFormed(tree.getRight(), treeName);
-        }
-        else {
-            assertEquals(NodeType.LEAF, tree.getType(), treeName + " has a determinate state (0 or 1) at a non-leaf node");
-        }
-    }
+    //
+    // Test des méthodes spécifiques avec des fichiers d'images
+    //
 
     @ParameterizedTest
     @CsvSource({
