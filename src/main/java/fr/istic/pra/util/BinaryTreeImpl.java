@@ -14,8 +14,9 @@ public class BinaryTreeImpl<T> implements BinaryTree<T> {
 
     @Override
     public String toString() {
-        /* TODO: À vous de compléter ! (en attendant, on fait planter) */
-        throw new UnsupportedOperationException("À vous de l'implémenter");
+        if (isEmpty()) return "∅"; 
+        if (getType() == NodeType.LEAF) return rootValue.toString();
+        return "(" + left.toString() + " " + rootValue + " " + right.toString() + ")";
     }
 
     @Override
@@ -23,67 +24,106 @@ public class BinaryTreeImpl<T> implements BinaryTree<T> {
         if (this == o) return true;
         if (!(o instanceof BinaryTreeImpl)) return false;
         BinaryTreeImpl<?> that = (BinaryTreeImpl<?>) o;
-        /* TODO: À vous de compléter ! (en attendant, on fait planter) */
-        throw new UnsupportedOperationException("À vous de l'implémenter");
+
+        if (this.isEmpty() && that.isEmpty()) return true;
+        if (this.isEmpty() != that.isEmpty()) return false;
+
+        if (!this.rootValue.equals(that.rootValue)) return false;
+
+        return this.left.equals(that.left) && this.right.equals(that.right);
     }
 
     @Override
     public int hashCode() {
-        /* TODO: À vous de compléter ! (en attendant, on fait planter) */
-        throw new UnsupportedOperationException("À vous de l'implémenter");
+        if (isEmpty()) return 0;
+        int h = rootValue.hashCode();
+        h +=  left.hashCode();
+        h +=  right.hashCode();
+        return h;
     }
 
     @Override
     public T getRootValue() {
-        /* TODO: À vous de compléter ! (en attendant, on fait planter) */
-        throw new UnsupportedOperationException("À vous de l'implémenter");
+        return rootValue;
     }
 
     @Override
     public BinaryTreeImpl<T> getLeft() {
-        /* TODO: À vous de compléter ! (en attendant, on fait planter) */
-        throw new UnsupportedOperationException("À vous de l'implémenter");
+       return left;
     }
 
     @Override
     public BinaryTreeImpl<T> getRight() {
-        /* TODO: À vous de compléter ! (en attendant, on fait planter) */
-        throw new UnsupportedOperationException("À vous de l'implémenter");
+        return right;
     }
 
     @Override
     public void setRootValue(T value) {
-        /* TODO: À vous de compléter ! (en attendant, on fait planter) */
-        throw new UnsupportedOperationException("À vous de l'implémenter");
+       if (isEmpty()) {
+            //left  = new BinaryTreeImpl<>();
+            //right = new BinaryTreeImpl<>();
+            return;
+        }
+        this.rootValue = value;
     }
 
     @Override
     public void createRootWithValue(T value) {
-        /* TODO: À vous de compléter ! (en attendant, on fait planter) */
-        throw new UnsupportedOperationException("À vous de l'implémenter");
+        if (!isEmpty()) return;
+        this.rootValue = value;
+        left  = new BinaryTreeImpl<>();
+        right = new BinaryTreeImpl<>();
     }
 
     @Override
     public void removeRoot() {
-        /* TODO: À vous de compléter ! (en attendant, on fait planter) */
-        throw new UnsupportedOperationException("À vous de l'implémenter");
+        NodeType typeRacine = this.getType();
+        if(typeRacine == NodeType.DOUBLE){
+            throw new IllegalStateException( "Cannot remove root with two children");
+        }
+        if(typeRacine == NodeType.LEAF){
+            rootValue = null;
+            left = null;
+            right = null;
+            return;
+        }
+        if(typeRacine == NodeType.SIMPLE_LEFT){
+            this.rootValue = left.getRootValue();
+            BinaryTreeImpl<T> copieRight = left.getRight();
+            this.left = left.getLeft();
+            this.right = copieRight;
+            return;
+
+        }
+        if(typeRacine == NodeType.SIMPLE_RIGHT){
+            this.rootValue = right.getRootValue();
+            BinaryTreeImpl<T> copieRight = right.getRight();
+            this.left = right.getLeft();
+            this.right = copieRight;
+            return;
+        }
     }
 
     @Override
     public void clear() {
-        /* TODO: À vous de compléter ! (en attendant, on fait planter) */
-        throw new UnsupportedOperationException("À vous de l'implémenter");
+        this.left = null;
+        this.right = null;
+        this.rootValue = null;
     }
 
     @Override
     public boolean isEmpty() {
-        /* TODO: À vous de compléter ! (en attendant, on fait planter) */
-        throw new UnsupportedOperationException("À vous de l'implémenter");
+        return rootValue == null && left == null && right == null;
     }
 
     @Override
     public NodeType getType() {
-        /* TODO: À vous de compléter ! (en attendant, on fait planter) */
-        throw new UnsupportedOperationException("À vous de l'implémenter");
+    
+        if (isEmpty()) return NodeType.SENTINEL;
+        if ((left == null || left.isEmpty()) && (right == null || right.isEmpty())) return NodeType.LEAF;
+        if (left == null || left.isEmpty()) return NodeType.SIMPLE_RIGHT;
+        if (right == null || right.isEmpty()) return NodeType.SIMPLE_LEFT;
+
+        return NodeType.DOUBLE;
     }
 }

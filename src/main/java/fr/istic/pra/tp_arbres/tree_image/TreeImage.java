@@ -44,8 +44,8 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 	 */
 	public TreeImage() {
 		/* TODO: Selectionner votre implémentation d'arbre binaire quand vous l'aurez terminée */
-		this(BinaryTreeImplProf::new);
-		// this(BinaryTreeImpl::new);
+		//this(BinaryTreeImplProf::new);
+		this(BinaryTreeImpl::new);
 	}
 
 	/**
@@ -110,8 +110,12 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 	 */
 	@Override
 	public void fill(int color) {
-		/* TODO: À vous de compléter ! (en attendant, on fait planter) */
-		throw new UnsupportedOperationException("À vous de l'implémenter");
+		Node nouvelleRacine = Node.valueOf(color);
+
+		if(!this.tree.isEmpty()){
+			this.tree.clear();
+		}
+		this.tree.createRootWithValue(nouvelleRacine);
 	}
 
 	/** 
@@ -122,8 +126,49 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 	 */
 	@Override
 	public boolean isPixelOn(int x, int y) {
-		/* TODO: À vous de compléter ! (en attendant, on fait planter) */
-		throw new UnsupportedOperationException("À vous de l'implémenter");
+
+		BinaryTree<Node> current = this.tree;
+		int xMin = 0;
+		int xMax = 255;
+		int yMin = 0;
+		int yMax = 255;
+
+		boolean parite = false;
+
+		while(current.getRootValue().state == Node.INDETERMINATE_STATE){
+			
+			if(parite){
+				if(x >= xMin && x <= xMin+(xMax-xMin)/2){
+					current = current.getLeft();
+					xMax = xMin+(xMax-xMin)/2;
+				}
+				else{
+					current = current.getRight();
+					xMin += (xMax-xMin)/2 + 1;
+				}
+		
+			}
+			else{
+				if( y >= yMin && y <= yMin+(yMax-yMin)/2){
+					current = current.getLeft();
+					yMax = yMin+(yMax-yMin)/2;
+				}
+				else{
+					current = current.getRight();
+					yMin += (yMax-yMin)/2 + 1;
+				}
+			
+			}
+			
+			parite = !parite;			
+		}
+		
+		if(current.getRootValue().state == 1){
+			return true;
+		} else {
+			return false;
+		}
+
 	}
 
 
@@ -150,8 +195,34 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 	 * @param image2  l'image source (sous forme d'arbre binaire)
 	 */
 	public void affect(TreeImage image2) {
-		/* TODO: À vous de compléter ! (en attendant, on fait planter) */
-		throw new UnsupportedOperationException("À vous de l'implémenter");
+
+		this.tree.clear();
+
+		BinaryTree<Node> treeImg2 = image2.getTree();
+		
+		affectRec(this.tree, treeImg2);
+		
+	}
+	
+	private void affectRec(BinaryTree<Node> tree1, BinaryTree<Node> tree2){
+
+		if(tree2.isEmpty()){
+			return;
+		}
+		
+		if(tree2.getType() == NodeType.SENTINEL){
+			return;
+		}
+		if(tree1.isEmpty()){
+			tree1.createRootWithValue(tree2.getRootValue());
+			
+		} else { 
+			tree1.setRootValue(tree2.getRootValue());
+		}
+
+		affectRec(tree1.getLeft(), tree2.getLeft());
+		affectRec(tree1.getRight(), tree2.getRight());
+
 	}
 
 
@@ -175,9 +246,73 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 	 * @param image  l'image à intersecter avec l'image courante
 	 */
 	public void intersection(TreeImage image) {
-		/* TODO: À vous de compléter ! (en attendant, on fait planter) */
-		throw new UnsupportedOperationException("À vous de l'implémenter");
+		BinaryTree<Node> treeImg = image.getTree();
+		
+		intersectionRec(this.tree, treeImg);
 	}
+
+
+
+	private void intersectionRec(BinaryTree<Node> tree1, BinaryTree<Node> tree2) {
+
+    if (tree2.getType() == NodeType.SENTINEL) {
+        tree1.clear();
+        tree1.createRootWithValue(Node.valueOf(0));
+        return;
+    }
+    
+    if (tree1.getType() == NodeType.SENTINEL) {
+        return;
+    }
+
+    if (tree1.isEmpty()) {
+        tree1.createRootWithValue(Node.valueOf(0));
+        return;
+    }
+
+    int s1 = tree1.getRootValue().state;
+    int s2 = tree2.getRootValue().state;
+
+    if (s2 == 0) {
+        tree1.clear();
+        tree1.createRootWithValue(Node.valueOf(0));
+        return;
+	}
+    
+    if (s2 == 1) {
+        return;
+    }
+
+    if (s1 != 2) {
+
+        if (s1 == 1) {
+            affectRec(tree1, tree2); // 1 ∩ structure = structure
+            return;
+        }
+
+        if (s1 == 0) {
+            //tree1.clear();
+            //tree1.createRootWithValue(Node.valueOf(0));
+            return;
+        }
+    }
+
+    intersectionRec(tree1.getLeft(),  tree2.getLeft());
+    intersectionRec(tree1.getRight(), tree2.getRight());
+
+    
+    if (tree1.getLeft().getType()  == NodeType.LEAF &&
+        tree1.getRight().getType() == NodeType.LEAF) {
+
+        int leftColor  = tree1.getLeft().getRootValue().state;
+        int rightColor = tree1.getRight().getRootValue().state;
+
+        if (leftColor == rightColor) {
+            tree1.clear();
+            tree1.createRootWithValue(Node.valueOf(leftColor));
+        }
+    }
+}
 
 
 
@@ -192,9 +327,35 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 	 */
 	@Override
 	public TreeImage rotated180() {
-		/* TODO: À vous de compléter ! (en attendant, on fait planter) */
-		throw new UnsupportedOperationException("À vous de l'implémenter");
+		TreeImage imageRotate = this.copy();
+
+		rotated180Rec(imageRotate.getTree());
+
+		return imageRotate;
 	}
+
+	private void rotated180Rec(BinaryTree<Node> tree1){
+
+		if(tree1.getType() == NodeType.SENTINEL || tree1.getType() != NodeType.DOUBLE){
+			return;
+		}
+	
+		TreeImage leftCopy = createTreeImage();
+    	TreeImage rightCopy = createTreeImage();
+    	affectRec(leftCopy.getTree(), tree1.getLeft());
+    	affectRec(rightCopy.getTree(), tree1.getRight());
+
+		tree1.getLeft().clear();
+    	tree1.getRight().clear();
+
+		affectRec(tree1.getLeft(), rightCopy.getTree());
+		affectRec(tree1.getRight(), leftCopy.getTree());
+
+		rotated180Rec(tree1.getLeft());
+		rotated180Rec(tree1.getRight());
+
+	}
+
 
 
 	/**
@@ -205,8 +366,33 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 	 */
 	@Override
 	public TreeImage inverted() {
-		/* TODO: À vous de compléter ! (en attendant, on fait planter) */
-		throw new UnsupportedOperationException("À vous de l'implémenter");
+		TreeImage copieInverted = this.copy();
+		
+		invertedRec(copieInverted.tree);
+
+		return copieInverted;
+
+		
+	}
+	
+	private void invertedRec(BinaryTree<Node> tree){
+		if(tree.getType() == NodeType.SENTINEL){
+			return;
+		}
+		else{
+			if(tree.getType() == NodeType.LEAF){
+				if(tree.getRootValue().state == 1){
+					tree.setRootValue(Node.valueOf(0));
+				}
+				else if(tree.getRootValue().state == 0){
+					tree.setRootValue(Node.valueOf(1));
+				}
+
+				return;
+			}
+			invertedRec(tree.getLeft());
+			invertedRec(tree.getRight());
+		}
 	}
 
 
@@ -217,8 +403,31 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 	 */
 	@Override
 	public TreeImage flippedHorizontal() {
-		/* TODO: À vous de compléter ! (en attendant, on fait planter) */
-		throw new UnsupportedOperationException("À vous de l'implémenter");
+		TreeImage copieFlipped = this.copy();
+		flippedHorizontalRec(copieFlipped.getTree(), true);
+		return copieFlipped;
+	}
+
+	private void flippedHorizontalRec (BinaryTree<Node> tree1, boolean pair){
+		if(tree1.getType() == NodeType.SENTINEL || tree1.getType() != NodeType.DOUBLE){
+			return;
+		}
+
+		if(!pair){
+			TreeImage leftCopy = createTreeImage();
+			TreeImage rightCopy = createTreeImage();
+			affectRec(leftCopy.getTree(), tree1.getLeft());
+			affectRec(rightCopy.getTree(), tree1.getRight());
+	
+			tree1.getLeft().clear();
+			tree1.getRight().clear();
+	
+			affectRec(tree1.getLeft(), rightCopy.getTree());
+			affectRec(tree1.getRight(), leftCopy.getTree());
+		}
+
+		flippedHorizontalRec(tree1.getLeft(), !pair);
+		flippedHorizontalRec(tree1.getRight(), !pair);
 	}
 
 
@@ -229,8 +438,12 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 	 */
 	@Override
 	public TreeImage rotatedClockwise90() {
-		/* TODO: À vous de compléter ! (en attendant, on fait planter) */
-		throw new UnsupportedOperationException("À vous de l'implémenter");
+		// Nous avons essayé sur papier mais nous ne trouvions pas de lien entre l'arbre original et celui de l'image à 90 
+		// nous aurions dû gérer une multidude de cas et nous avons pas vraiment réussi à faire une implémentation
+		
+		TreeImage flip180 = this.rotated180();
+		TreeImage symetrie90 = flip180.flippedHorizontal();
+		return symetrie90;
 	}
 
 
@@ -250,8 +463,30 @@ public class TreeImage extends TreeImageBase implements Image, DrawableByPixel, 
 	 */
 	@Override
 	public boolean testDiagonal() {
-		/* TODO: À vous de compléter ! (en attendant, on fait planter) */
-		throw new UnsupportedOperationException("À vous de l'implémenter");
+		return testDiagonalRec(tree, 0, 255, 0, 255, true);
+	}
+
+	private boolean testDiagonalRec(BinaryTree<Node> node, int xMin, int xMax, int yMin, int yMax, boolean pair) {
+    	if (xMax < yMin || yMax < xMin){
+    	    return true;
+		}
+
+    	NodeType type = node.getType();
+
+    
+    	if (type == NodeType.LEAF) {
+        	return node.getRootValue().state == 1; 
+    	}	
+
+    	int xMid = (xMin + xMax) / 2;
+    	int yMid = (yMin + yMax) / 2;
+
+    	if (pair) {
+        	return testDiagonalRec(node.getLeft(),  xMin,    xMid,  yMin, yMax, !pair) && testDiagonalRec(node.getRight(), xMid+1,  xMax,  yMin, yMax, !pair);
+		} else 
+		{
+        return testDiagonalRec(node.getLeft(),  xMin, xMax, yMin,   yMid,  !pair) && testDiagonalRec(node.getRight(), xMin, xMax, yMid+1, yMax,  !pair);
+    	}
 	}
 
 
